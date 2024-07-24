@@ -19,6 +19,10 @@ def predict(img):
     results = model.predict(img)
     return results  # Return the prediction results
 
+def detection(image):
+    results=model(image)
+    return results
+    
 def object_detection(img):
     results=model1(img)
     return results
@@ -113,7 +117,22 @@ def count():
         finally:
             # Clean up the temporary file
             os.remove(temp_image_path)
+   
+@app.route('/detector',methods=['POST'])
+def detect():
+    if request.method == 'POST':
+        image = request.files.get('file')
+        converted = Image.open(image)
+        imgarr = np.array(converted)
+        results = detection(imgarr)
 
+        result_img = results[0].plot()
+        result_img_pil = Image.fromarray(result_img)
+        img_io = io.BytesIO()
+        result_img_pil.save(img_io, 'JPEG')
+        img_io.seek(0)
+        # Return the image with predictions
+        return send_file(img_io, mimetype='image/jpeg')
 
 if __name__ == '__main__':
     app.run(debug=True)
